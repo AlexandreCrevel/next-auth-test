@@ -6,24 +6,37 @@ const handler = NextAuth({
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        username: { label: 'Username', type: 'text', placeholder: 'jsmith' },
+        email: { label: 'Email', type: 'text', placeholder: 'jsmith' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials, req) {
-        const res = await fetch('http://localhost:3000/api/login', {
-          method: 'POST',
-          body: JSON.stringify({
-            username: credentials?.username,
-            password: credentials?.password,
-          }),
-          headers: { 'Content-Type': 'application/json' },
-        });
-        const user = await res.json();
-
-        if (res.ok && user) {
-          return user;
+      async authorize(credentials) {
+        console.log(credentials?.email, credentials?.password);
+        if (!credentials?.email || !credentials.password) {
+          return null;
         }
-        return null;
+
+        try {
+          const res = await fetch('http://127.0.0.1:8000/api/v1/login/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+          });
+          const user = await res.json();
+          console.log(user);
+          if (user) {
+            return user;
+          } else {
+            return null;
+          }
+        } catch (error) {
+          console.error(error);
+          return null;
+        }
       },
     }),
   ],
